@@ -15,11 +15,14 @@ from .lib import py3, py3metafix
 __VERSION__ = (0, 10, 2)
 
 
+enum = None
+
 # Python3 support
 if py3:
     import urllib.parse as urlparse
     str_types = (str, bytes)
     unicode = str
+
 else:
     try:
         from future_builtins import map
@@ -1353,6 +1356,15 @@ class Enum(Trafaret):
 
     def __repr__(self):
         return "<Enum(%s)>" % (", ".join(map(repr, self.variants)))
+
+    @classmethod
+    def from_enum(cls, variant):
+        import enum
+
+        if not isinstance(variant, enum.EnumMeta):
+            raise TypeError("Expect 'enum.EnumMeta' got %r" % type(variant))
+
+        return cls(*(x.name for x in variant))
 
 
 class Callable(Trafaret):

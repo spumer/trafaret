@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import sys
 import unittest
 import trafaret as t
+import trafaret.utils as tu
 from collections import Mapping as AbcMapping
 from trafaret import extract_error, ignore, DataError
 from trafaret.extras import KeysSubset
@@ -264,6 +266,26 @@ class TestEnumTrafaret(unittest.TestCase):
         res = extract_error(trafaret, 2)
         self.assertEqual(res, "value doesn't match any variant")
 
+    @unittest.skipIf(sys.version_info < (3, 4),
+        "not supported in this veresion"
+    )
+    def test_enum_py3(self):
+        import enum
+
+        class Colors(enum.Enum):
+            red = 0
+            green = 1
+            blue = 2
+
+        trafaret = t.Enum.from_enum(Colors)
+        self.assertEqual(repr(trafaret), "<Enum('red', 'green', 'blue')>")
+        res = trafaret.check('red')
+        res = trafaret.check('green')
+        res = extract_error(trafaret, 'unknown')
+        self.assertEqual(res, "value doesn't match any variant")
+
+        with self.assertRaises(TypeError):
+            trafaret = t.Enum.from_enum('not a enum instance')
 
 
 class TestFloat(unittest.TestCase):
